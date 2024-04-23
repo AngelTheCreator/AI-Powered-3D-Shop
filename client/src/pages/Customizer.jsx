@@ -1,7 +1,9 @@
 import React from 'react'
 
-export const Customizer = () => {
+const Customizer = () => {
   return (
     <div>Customizer</div>
   )
 }
+
+export default Customizer
