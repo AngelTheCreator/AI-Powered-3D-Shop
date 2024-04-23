@@ -1,6 +1,6 @@
 
 
-function App() {
+export function App() {
   return (
     <div>
       <h1 className='head-text'>React App</h1>
@@ -8,4 +8,4 @@ function App() {
   )
 }
 
-export default App
+
