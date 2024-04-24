@@ -8,6 +8,7 @@ headContentAnimation,
 headTextAnimation,
 slideAnimation,
 } from '../config/motion'
+import { CustomButton } from '../components';
 
 const Home = () => {
   const snap = useSnapshot(state);
@@ -34,6 +35,12 @@ const Home = () => {
                   Create your unique and exclusive shirt with our brand-new 3D customization tool. 
                   <strong>Unleash your imagination</strong>{' '} and define your style.
                 </p>
+              <CustomButton
+                type='filled'
+                title='Customize It'
+                handleCLick={() => state.intro = false}
+                customStyles="w-fit px-4 py-2.5 font-bold text-sm"
+              />
               </motion.div>
             </motion.div>
         </motion.section>
