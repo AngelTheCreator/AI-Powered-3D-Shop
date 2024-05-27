@@ -10,9 +10,11 @@ import CameraRig from './CameraRig'
         <Canvas>
             <ambientLight intensity={0.5} />
             <Environment preset='city' />
+            <CameraRig>
             <Center>
                 <Shirt />
             </Center>
+            </CameraRig>
         </Canvas>
     )
 }
