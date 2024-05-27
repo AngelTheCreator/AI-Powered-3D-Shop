@@ -11,8 +11,16 @@ import {
   AIPicker, ColorPicker, CustomButton, FilePicker, Tab } from '../components'
 
 const Customizer = () => {
+  const snap = useSnapshot(state);
+
   return (
-    <div>Customizer</div>
+    <AnimatePresence>
+      {!snap.intro && (
+        <div>
+          Customizer
+        </div>
+      )}
+    </AnimatePresence>
   )
 }
 
