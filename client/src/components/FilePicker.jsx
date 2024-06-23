@@ -20,7 +20,7 @@ function FilePicker({ file, setFile, readFile }) {
           {file ? file.name : 'No file selected'}
         </p>
 
-      <div className='mt-4 flex flex-wrap gap-36'>
+      <div className='mt-4 flex flex-wrap gap-3'>
         <CustomButton
           type='outline'
           title='Logo'

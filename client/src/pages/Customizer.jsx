@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useSnapshot } from 'valtio';
 import config from '../config/config';
@@ -7,13 +7,12 @@ import { download, logoShirt, stylishShirt } from '../assets';
 import { downloadCanvasToImage, reader } from '../config/helpers';
 import { EditorTabs, FilterTabs, DecalTypes } from '../config/constants';
 import { fadeAnimation, slideAnimation } from '../config/motion';
-import {AIPicker, ColorPicker, CustomButton, FilePicker, Tab } from '../components'
+import { AIPicker, ColorPicker, CustomButton, FilePicker, Tab } from '../components';
 
 const Customizer = () => {
   const snap = useSnapshot(state);
 
-  const [file, setFile] = useState(state);
-
+  const [file, setFile] = useState(null);
   const [prompt, setPrompt] = useState('');
   const [generatingImg, setGeneratingImg] = useState(false);
 
@@ -23,107 +22,125 @@ const Customizer = () => {
     stylishShirt: false,
   });
 
-  //show tab content depending on the activeTab 
-  const generateTabContent = (tab) => {
+  // Show tab content depending on the activeTab 
+  const generateTabContent = () => {
     switch (activeEditorTab) {
       case "colorpicker":
-        return <ColorPicker />
+        return <ColorPicker />;
       case "filepicker":
-        return <FilePicker
-          file={file}
-          setFile={setFile} 
-          readFile={readFile}
-        />
+        return (
+          <FilePicker
+            file={file}
+            setFile={setFile}
+            readFile={() => readFile('logo')} // Assume 'logo' as default for now, change as needed
+          />
+        );
       case "aipicker":
-        return <AIPicker />
+        return <AIPicker />;
       default:
         return null;
     }
-  }
+  };
 
   const handleDecals = (type, result) => {
-    const decalType = DecalTypes[types];
+    console.log('Decal type:', type);
+    const decalType = DecalTypes[type];
+    
+    if (!decalType) {
+      console.error(`Invalid decal type: ${type}`);
+      return;
+    }
 
     state[decalType.stateProperty] = result;
 
-    if(!activeFilterTab[decalType.filterTab]){
+    if (!activeFilterTab[decalType.filterTab]) {
       handleActiveFilterTab(decalType.filterTab);
     }
-  }
+  };
 
   const handleActiveFilterTab = (tabName) => {
-    switch(tabName){
-      case 'logoShirt':
-        state.isLogoTexture = !activeFilterTab[tabName];
-        break;
-      case 'stylishShirt':
-        state.isFullTexture = !activeFilterTab[tabName];
+    setActiveFilterTab((prev) => {
+      const newActiveFilterTab = { ...prev };
+      switch (tabName) {
+        case 'logoShirt':
+          newActiveFilterTab.logoShirt = !prev.logoShirt;
+          state.isLogoTexture = newActiveFilterTab.logoShirt;
+          break;
+        case 'stylishShirt':
+          newActiveFilterTab.stylishShirt = !prev.stylishShirt;
+          state.isFullTexture = newActiveFilterTab.stylishShirt;
+          break;
         default:
+          newActiveFilterTab.logoShirt = true;
+          newActiveFilterTab.stylishShirt = false;
           state.isLogoTexture = true;
           state.isFullTexture = false;
-    }
-  }
+      }
+      return newActiveFilterTab;
+    });
+  };
 
   const readFile = (type) => {
     reader(file)
-    .then((result) => {
-      handleDecals(type, result);
-      setActiveEditorTab("")
-    })
-  }
+      .then((result) => {
+        handleDecals(type, result);
+        setActiveEditorTab('');
+      });
+  };
 
   return (
     <AnimatePresence>
       {!snap.intro && (
         <>
-        <motion.div
-        key='custom'
-        className='absolute top-0 left-0 z-10'
-        {...slideAnimation('left')}
-        >
-          <div className='flex items-center min-h-screen'>
-            <div className='editortabs-container tabs'>
-              {EditorTabs.map((tab) => (
-                <Tab
-                  key={tab.name}
-                  tab={tab}
-                  handleClick={() => setActiveEditorTab(tab.name)}
-                />
-              ))}
+          <motion.div
+            key='custom'
+            className='absolute top-0 left-0 z-10'
+            {...slideAnimation('left')}
+          >
+            <div className='flex items-center min-h-screen'>
+              <div className='editortabs-container tabs'>
+                {EditorTabs.map((tab) => (
+                  <Tab
+                    key={tab.name}
+                    tab={tab}
+                    handleClick={() => setActiveEditorTab(tab.name)}
+                  />
+                ))}
 
-              {generateTabContent()}
+                {generateTabContent()}
+              </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
 
-        <motion.div
-        className='absolute z-10 top-5 right-5'
-        {...fadeAnimation}>
-          <CustomButton
-            type='filled'
-            title='Go Back'
-            handleClick={() => state.intro = true}
-            customStyles='w-fit px-4 py-2.5 font-bold text-sm'
-          />
-        </motion.div>
-        <motion.div
-        className='filtertabs-container'
-        {...slideAnimation('up')}
-        >
-          {FilterTabs.map((tab) => (
-            <Tab
-              key={tab.name}
-              tab={tab}
-              isFilterTab
-              isActiveTab=''
-              handleClick={() => {}}
+          <motion.div
+            className='absolute z-10 top-5 right-5'
+            {...fadeAnimation}
+          >
+            <CustomButton
+              type='filled'
+              title='Go Back'
+              handleClick={() => (state.intro = true)}
+              customStyles='w-fit px-4 py-2.5 font-bold text-sm'
             />
-          ))}
-        </motion.div>
+          </motion.div>
+          <motion.div
+            className='filtertabs-container'
+            {...slideAnimation('up')}
+          >
+            {FilterTabs.map((tab) => (
+              <Tab
+                key={tab.name}
+                tab={tab}
+                isFilterTab
+                isActiveTab={activeFilterTab[tab.name]}
+                handleClick={() => handleActiveFilterTab(tab.name)}
+              />
+            ))}
+          </motion.div>
         </>
       )}
     </AnimatePresence>
-  )
-}
+  );
+};
 
-export default Customizer
+export default Customizer;
