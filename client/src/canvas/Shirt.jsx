@@ -1,55 +1,76 @@
-import React from 'react'
-import { easing } from 'maath'
-import { useFrame } from '@react-three/fiber'
-import { useSnapshot } from 'valtio'
-import { Decal, useGLTF, useTexture } from '@react-three/drei'
-import state from '../store'
+import React, { useEffect } from 'react';
+import { easing } from 'maath';
+import { useSnapshot } from 'valtio';
+import { useFrame } from '@react-three/fiber';
+import { Decal, useGLTF, useTexture } from '@react-three/drei';
+import * as THREE from 'three';
+
+import state from '../store';
 
 const Shirt = () => {
-    const snap = useSnapshot(state)
-    const { nodes, materials } = useGLTF('/shirt_baked.glb');
+  const snap = useSnapshot(state);
+  const { nodes, materials } = useGLTF('/shirt_baked.glb');
 
-    const logoTexture = useTexture(snap.logoDecal);
-    const fullTexture = useTexture(snap.fullDecal);
+  const logoTexture = useTexture(snap.logoDecal);
+  const fullTexture = useTexture(snap.fullDecal);
 
-    useFrame((state, delta) => easing.dampC(materials.lambert1.color,
-    snap.color, 0.25, delta));
+  // Set texture properties if textures are loaded
+  useEffect(() => {
+    if (logoTexture) {
+      logoTexture.magFilter = THREE.LinearFilter;
+      logoTexture.minFilter = THREE.LinearFilter;
+      logoTexture.wrapS = THREE.RepeatWrapping;
+      logoTexture.wrapT = THREE.RepeatWrapping;
+      logoTexture.repeat.set(1, 1);
+    }
+    if (fullTexture) {
+      fullTexture.magFilter = THREE.LinearFilter;
+      fullTexture.minFilter = THREE.LinearFilter;
+      fullTexture.wrapS = THREE.RepeatWrapping;
+      fullTexture.wrapT = THREE.RepeatWrapping;
+      fullTexture.repeat.set(1, 1);
+    }
+  }, [logoTexture, fullTexture]);
 
-    const stateString = JSON.stringify(snap);
+  useFrame((state, delta) => {
+    if (materials.lambert1) {
+      easing.dampC(materials.lambert1.color, snap.color, 0.25, delta);
+    }
+  });
+
+  const stateString = JSON.stringify(snap);
 
   return (
     <group key={stateString}>
-        <mesh
-            castShadow
-            geometry={nodes.T_Shirt_male.geometry}
-            material={materials.lambert1}
-            material-roughness={1}
-            dispose={null}
-            >
-            
-            {snap.isFullTexture && (
-                <Decal
-                    position={[0, 0, 0]}
-                    rotation={[0, 0, 0]}
-                    scale={1}
-                    map={fullTexture}
-                />
-            )}
+      <mesh
+        castShadow
+        geometry={nodes.T_Shirt_male.geometry}
+        material={materials.lambert1}
+        material-roughness={1}
+        dispose={null}
+      >
+        {snap.isFullTexture && fullTexture && (
+          <Decal 
+            position={[0, 0, 0]}
+            rotation={[0, 0, 0]}
+            scale={1}
+            map={fullTexture}
+          />
+        )}
 
-            {snap.isLogoTexture && (
-                <Decal
-                    position={[0, 0.04, 0.15]}
-                    rotation={[0, 0, 0]}
-                    scale={0.15}
-                    map={logoTexture}
-                    map-anisotropy={16}
-                    depthTest={false}
-                    depthWrite={true}
-                />
-            )}
-        </mesh>
+        {snap.isLogoTexture && logoTexture && (
+          <Decal 
+            position={[0, 0.04, 0.15]}
+            rotation={[0, 0, 0]}
+            scale={0.15}
+            map={logoTexture}
+            depthTest={false}
+            depthWrite={true}
+          />
+        )}
+      </mesh>
     </group>
-  )
-}
+  );
+};
 
-export default Shirt
+export default Shirt;
